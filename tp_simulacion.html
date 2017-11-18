@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    <script>
+    $( document ).ready(function() {
+        $('#enviar').click(function() {
+            
+            //llenar stringAddress
+        //Genero valores Random entre 1 - 10 para los intervalos de arribo
+        function Ia() {
+            return Math.log(1- Math.random()) * -10.9769;
+        }
+        //Genero los valores Random entre 2- 100 para los tiempos de atencion
+        function Ta() {
+            return Math.log(1- Math.random()) * -1.8376;
+        }
+        //Genero valor Random entre 0 y 1 
+        function Random() {
+            return Math.random();
+        }
+
+        var N = $('#puestos').val();
+        var T = 0;
+        var TPLL = 1;
+        var NT = 0;
+        var ARR = 0;
+        var NS = 0;
+        var STE = 0;
+        var STLL = 0;
+        var STO = 0;
+        var ITO = 0;
+        var SPE = 0;
+        var STS = 0;
+        var TPS = 0;
+        var TFinal = 7680; //4 dias de llamados por 8 hs * 60 minutos por hora
+        var TPS = [];
+        console.log(N);
+        //lleno array TPS con la cantidad de posiciones N inicializadas en 0.
+        for(i=0;i<N;i++){
+            TPS.push(999999);
+        }
+
+        function ObtenerMenortpsi(){
+            var index = 0;
+            var value = TPS[0];
+            for (var i = 0; i < TPS.length; i++) {
+              if (TPS[i] <= value) {
+                value = TPS[i];
+                index = i;
+              }
+            }
+            return index;
+        }
+
+        function ObtenerTPSHV(){
+            for (var j = 0; j < TPS.length; j++) {
+              if (TPS[j] == 999999) {
+                return j;
+              }
+            }
+        }
+
+//**************INICIO PROCESO PRINCIPAL
+
+                function ProcesarLlamado(){
+                    var i = ObtenerMenortpsi();
+
+                    if(TPLL <= TPS[i]){
+                            //llegada de llamado
+                                T = TPLL;
+                                NT = NT+1;
+                                if(Random() <= 0.3){
+                                        ARR = ARR + 1;
+                                }else{
+                                        NS = NS+1;
+                                        STLL = STLL + T;
+                                        TPLL = Ia() + T;
+
+                                                if(NS<= N ){
+                                                    var j = ObtenerTPSHV();
+                                                    TPS[j] = Ta() + T;
+                                                    
+                                                }else{
+                                                    STE = STE + T;
+                                                    SPE = SPE + 1;
+                                                }
+
+                                               STO = STO + (T - ITO);
+                            }
+                    }else{
+                        //salida de llamado - puesto se libera 
+                            T = TPS[i];
+                            NS = NS-1;
+                            STS = STS + T;
+                                    if(NS>=N){
+                                        TPS[i] = Ta() + T;
+                                    }else{
+                                        ITO = T;
+                                        TPS[i] = 999999;
+                                    }
+                    }
+                }
+
+
+                while(T<=TFinal){
+                    ProcesarLlamado();
+                }
+
+                while(NS!=0){
+                    TPLL = 999999;
+                    ProcesarLlamado()
+                }
+
+//**************FIN PROCESO PRINCIPAL
+
+    //calculo de resultados
+        PTO = STO *100 / T;
+        PTE = STE/SPE;
+        PPS = (STS - STLL) / NT;
+        PPA = (ARR/NT) * 100;
+
+        var res = 
+        "Tiempo al finalizar el programa: " + T + "<br>" + 
+        "Total Personas en el sistema: " + NT+ "<br>" +
+        "Cant Personas arrepentidas: " + ARR+ "<br>" + 
+        "Sumatoria Tiempo Oscioso: " + STO+ "<br>" + 
+        "Sumatoria Tiempo de Espera: " + STE+ "<br>" + 
+        "Sumatoria Tiempo Salida: " + STS+ "<br>" + 
+        "Sumatoria Tiempo LLegada: " + STLL+ "<br>" +
+
+        
+        "Promedio Tiempo Oscioso (%): " + PTO+ "<br>" + 
+        "Promedio tiempo de espera: " + PTE+ "<br>" + 
+        "Promedio de permanencia en el sistema (min): " + PPS+ "<br>" + 
+        "Porcentaje de Arrepentimiento (%) : " + PPA+ "<br>";
+
+        document.getElementById("resultados").innerHTML = res;
+
+        });
+    });
+</script>  
+</head>
+<body>
+        <b>Trabajo Práctico Simulación</b><br><br>
+        <b>Llamados entrantes de Call Center</b>
+        <br><br>
+        Funcion de Intervalo de Arribos a usar:    log(1- Math.random()) * -10.9769 <br><br>
+        Funcion de Tiempo de Atención a usar:     log(1- Math.random()) * -1.8376<br><br>
+        Especifique cantidad de puestos de antención (N):
+        <input style="width:400px;" type="text" id="puestos" name="puestos">
+        <br><br>
+        <input id="enviar" type="submit" value="Simular">
+    <br><br><br>
+    <div id="resultados" style="color: green;"></div>
+</body>
+</html>
